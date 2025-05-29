@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
 import android.content.Intent
+import com.example.weatherapp.RegisterActivity
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -103,6 +104,17 @@ fun LoginPage(modifier: Modifier = Modifier) {
             ) {
                 Text("Limpar")
             }
+        }
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        Button(
+            onClick = {
+                activity?.startActivity(Intent(activity, RegisterActivity::class.java))
+            },
+            modifier = Modifier.fillMaxWidth(0.9f)
+        ) {
+            Text("Criar nova conta")
         }
     }
 }
