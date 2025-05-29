@@ -3,6 +3,7 @@ package com.example.weatherapp
 import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -80,13 +81,18 @@ fun LoginPage(modifier: Modifier = Modifier) {
         ) {
             Button(
                 onClick = {
-                    Toast.makeText(activity, "Login OK!", Toast.LENGTH_LONG).show()
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        activity?.startActivity(
+                            Intent(activity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        )
+                    }
                 },
                 enabled = email.isNotEmpty() && password.isNotEmpty(),
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Login")
             }
+
 
             Button(
                 onClick = {
