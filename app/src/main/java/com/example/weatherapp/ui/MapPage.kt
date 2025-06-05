@@ -20,8 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.weatherapp.viewmodel.MainViewModel
+
 @Composable
-fun MapPage() {
+fun MapPage(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
