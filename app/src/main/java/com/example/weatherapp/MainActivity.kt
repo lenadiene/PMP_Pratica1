@@ -92,16 +92,11 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun HomePagePreview() {
-    val fakeViewModel = remember {
-        object {
-            val cities = listOf(
-                com.example.weatherapp.model.City("Cidade Preview", "Sol")
-            )
-        }
-    }
+    val fakeViewModel = remember { MainViewModel() }
 
     WeatherAppTheme {
         HomePage(viewModel = fakeViewModel)
     }
 }
+//No Jetpack Compose, previews não têm acesso ao lifecycle padrão do Android (como ViewModelProvider, viewModel() ou viewModels()), então não consegue usar diretamente um MainViewModel() como no app real — porque o preview não executa um contexto de Activity, onde o ViewModel vive normalmente.
 
