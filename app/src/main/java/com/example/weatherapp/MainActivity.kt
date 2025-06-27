@@ -1,9 +1,12 @@
 package com.example.weatherapp
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -14,6 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.ui.CityDialog
 import com.example.weatherapp.ui.HomePage
@@ -22,6 +27,7 @@ import com.example.weatherapp.ui.nav.BottomNavItem
 import com.example.weatherapp.ui.nav.MainNavHost
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import com.example.weatherapp.viewmodel.MainViewModel
+import com.example.weatherapp.ui.nav.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -34,11 +40,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            var showDialog by remember { mutableStateOf(false) }  // Passo 2: variável para controlar diálogo
+            var showDialog by remember { mutableStateOf(false) }
+
+            val currentRoute = navController.currentBackStackEntryAsState()
+            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class) == true
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = {}
+            )
 
             WeatherAppTheme {
 
-                // Passo 3: mostrar diálogo se showDialog for true
                 if (showDialog) {
                     CityDialog(
                         onDismiss = { showDialog = false },
@@ -72,12 +85,15 @@ class MainActivity : ComponentActivity() {
                         BottomNavBar(navController = navController, items)
                     },
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { showDialog = true }) {  // Passo 4: abrir diálogo
-                            Icon(Icons.Default.Add, contentDescription = "Adicionar")
+                        if (showButton) {
+                            FloatingActionButton(onClick = { showDialog = true }) {
+                                Icon(Icons.Default.Add, contentDescription = "Adicionar")
+                            }
                         }
                     }
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
+                        launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         MainNavHost(
                             navController = navController,
                             viewModel = viewModel
@@ -98,5 +114,3 @@ fun HomePagePreview() {
         HomePage(viewModel = fakeViewModel)
     }
 }
-//No Jetpack Compose, previews não têm acesso ao lifecycle padrão do Android (como ViewModelProvider, viewModel() ou viewModels()), então não consegue usar diretamente um MainViewModel() como no app real — porque o preview não executa um contexto de Activity, onde o ViewModel vive normalmente.
-
