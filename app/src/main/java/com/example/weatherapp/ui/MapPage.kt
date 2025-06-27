@@ -1,42 +1,61 @@
 package com.example.weatherapp.ui
-import android.app.Activity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.fillMaxSize
 import com.example.weatherapp.viewmodel.MainViewModel
+import com.google.maps.android.compose.*
+import com.google.android.gms.maps.model.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @Composable
 fun MapPage(viewModel: MainViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Gray)
-            .wrapContentSize(Alignment.Center)
+
+    val recife = LatLng(-8.05, -34.9)
+    val caruaru = LatLng(-8.27, -35.98)
+    val joaopessoa = LatLng(-7.12, -34.84)
+
+    val camPosState = rememberCameraPositionState()
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = camPosState,
+        onMapClick = { latLng ->
+            viewModel.add("Cidade@${latLng.latitude}:${latLng.longitude}", location = latLng)
+        }
     ) {
-        Text(
-            text = "Mapa",
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp
+        // Marcadores fixos
+        Marker(
+            state = MarkerState(position = recife),
+            title = "Recife",
+            snippet = "Marcador em Recife",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
         )
+        Marker(
+            state = MarkerState(position = caruaru),
+            title = "Caruaru",
+            snippet = "Marcador em Caruaru",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+        )
+        Marker(
+            state = MarkerState(position = joaopessoa),
+            title = "João Pessoa",
+            snippet = "Marcador em João Pessoa",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+        )
+
+        // Marcadores dinâmicos
+        viewModel.cities.forEach {
+            if (it.location != null) {
+                Marker(
+                    state = MarkerState(position = it.location),
+                    title = it.name,
+                    snippet = "${it.location}"
+                )
+            }
+        }
     }
 }
