@@ -28,6 +28,9 @@ import com.example.weatherapp.ui.nav.MainNavHost
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import com.example.weatherapp.viewmodel.MainViewModel
 import com.example.weatherapp.ui.nav.Route
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -67,7 +70,10 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = { Text("Bem-vindo/a!") },
                             actions = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = {
+                                    Firebase.auth.signOut()
+                                    // finish() // ← Remover esta linha.  O AuthStateListener do WeatherApp cuidará da navegação
+                                }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                                         contentDescription = "Sair"
@@ -75,6 +81,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         )
+
                     },
                     bottomBar = {
                         val items = listOf(

@@ -20,8 +20,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
 
 class LoginActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -39,8 +43,9 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginPage(modifier: Modifier = Modifier) {
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
+    // Aqui já preenche com os valores padrão que eu quero
+    var email by rememberSaveable { mutableStateOf("lenadiene@hotmail.com") }
+    var password by rememberSaveable { mutableStateOf("admin123") }
     val activity = LocalContext.current as? Activity
 
     Column(
@@ -82,10 +87,16 @@ fun LoginPage(modifier: Modifier = Modifier) {
         ) {
             Button(
                 onClick = {
-                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                        activity?.startActivity(
-                            Intent(activity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                        )
+                    if (activity != null && email.isNotEmpty() && password.isNotEmpty()) {
+                        Firebase.auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(activity) { task ->
+                                if (task.isSuccessful) {
+                                    Toast.makeText(activity, "Login OK!", Toast.LENGTH_LONG).show()
+                                    // O AuthStateListener do WeatherApp cuidará da navegação
+                                } else {
+                                    Toast.makeText(activity, "Login FALHOU!", Toast.LENGTH_LONG).show()
+                                }
+                            }
                     }
                 },
                 enabled = email.isNotEmpty() && password.isNotEmpty(),
@@ -93,7 +104,6 @@ fun LoginPage(modifier: Modifier = Modifier) {
             ) {
                 Text("Login")
             }
-
 
             Button(
                 onClick = {

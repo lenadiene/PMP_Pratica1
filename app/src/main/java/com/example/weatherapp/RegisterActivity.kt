@@ -17,6 +17,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
 
 class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,10 +96,21 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(0.9f),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+
+
             Button(
                 onClick = {
-                    Toast.makeText(activity, "Registro realizado com sucesso!", Toast.LENGTH_LONG).show()
-                    activity?.finish()
+                    if (activity != null) {
+                        Firebase.auth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(activity) { task ->
+                                if (task.isSuccessful) {
+                                    Toast.makeText(activity, "Registro OK!", Toast.LENGTH_LONG).show()
+                                    // activity.finish() // ← Remover esta linha. O AuthStateListener do WeatherApp cuidará da navegação
+                                } else {
+                                    Toast.makeText(activity, "Registro FALHOU!", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    }
                 },
                 enabled = name.isNotEmpty() &&
                         email.isNotEmpty() &&
