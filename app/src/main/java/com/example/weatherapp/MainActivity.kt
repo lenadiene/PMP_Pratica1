@@ -17,9 +17,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.weatherapp.db.fb.FBDatabase
 import com.example.weatherapp.ui.CityDialog
 import com.example.weatherapp.ui.HomePage
 import com.example.weatherapp.ui.nav.BottomNavBar
@@ -28,6 +30,7 @@ import com.example.weatherapp.ui.nav.MainNavHost
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import com.example.weatherapp.viewmodel.MainViewModel
 import com.example.weatherapp.ui.nav.Route
+import com.example.weatherapp.viewmodel.MainViewModelFactory
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -42,6 +45,10 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            val fbDB = remember { FBDatabase() }
+            val viewModel : MainViewModel = viewModel(
+                factory = MainViewModelFactory(fbDB)
+            )
             val navController = rememberNavController()
             var showDialog by remember { mutableStateOf(false) }
 
@@ -68,7 +75,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Bem-vindo/a!") },
+                            title = {
+                                val name = viewModel.user?.name?:"[não logado]"
+                                Text("Bem-vindo/a! $name")
+                            },
                             actions = {
                                 IconButton(onClick = {
                                     Firebase.auth.signOut()
@@ -115,7 +125,9 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun HomePagePreview() {
-    val fakeViewModel = remember { MainViewModel() }
+    val fakeViewModel = remember { MainViewModel(
+        db = TODO()
+    ) }
 
     WeatherAppTheme {
         HomePage(viewModel = fakeViewModel)

@@ -44,7 +44,7 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun LoginPage(modifier: Modifier = Modifier) {
     // Aqui já preenche com os valores padrão que eu quero
-    var email by rememberSaveable { mutableStateOf("lenadiene@hotmail.com") }
+    var email by rememberSaveable { mutableStateOf("lenadiene0@hotmail.com") }
     var password by rememberSaveable { mutableStateOf("admin123") }
     val activity = LocalContext.current as? Activity
 
