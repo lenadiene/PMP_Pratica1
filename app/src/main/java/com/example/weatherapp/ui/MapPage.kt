@@ -3,10 +3,7 @@ package com.example.weatherapp.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -37,7 +34,7 @@ fun MapPage(viewModel: MainViewModel) {
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = camPosState,
         onMapClick = { latLng ->
-            viewModel.add("Cidade@${latLng.latitude}:${latLng.longitude}", location = latLng)
+            viewModel.add(latLng) // ✅ Passo 5 — localização → nome automático
         },
         properties = MapProperties(
             isMyLocationEnabled = hasLocationPermission
@@ -68,11 +65,11 @@ fun MapPage(viewModel: MainViewModel) {
 
         // Marcadores dinâmicos das cidades favoritas
         viewModel.cities.forEach {
-            if (it.location != null) {
+            it.location?.let { pos ->
                 Marker(
-                    state = MarkerState(position = it.location),
+                    state = MarkerState(position = pos),
                     title = it.name,
-                    snippet = "${it.location}"
+                    snippet = "$pos"
                 )
             }
         }
