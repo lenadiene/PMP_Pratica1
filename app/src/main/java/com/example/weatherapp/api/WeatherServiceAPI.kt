@@ -11,6 +11,8 @@ interface WeatherServiceAPI {
         const val BASE_URL = "https://api.weatherapi.com/v1/"
         const val API_KEY = BuildConfig.WEATHER_API_KEY
     }
+    @GET("current.json?key=$API_KEY&lang=pt")
+    fun weather(@Query("q") query: String): Call<APICurrentWeather?>
 
     // Busca localização com base no nome da cidade ou coordenadas
     @GET("search.json?lang=pt_br") // o key vai como parâmetro
@@ -18,4 +20,7 @@ interface WeatherServiceAPI {
         @Query("key") apiKey: String = API_KEY,
         @Query("q") query: String
     ): Call<List<APILocation>?>
+
+    @GET("forecast.json?key=$API_KEY&days=10&lang=pt")
+    fun forecast(@Query("q") name: String): Call<APIWeatherForecast?>
 }

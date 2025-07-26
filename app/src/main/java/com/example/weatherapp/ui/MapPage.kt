@@ -65,13 +65,17 @@ fun MapPage(viewModel: MainViewModel) {
 
         // Marcadores dinâmicos das cidades favoritas
         viewModel.cities.forEach {
-            it.location?.let { pos ->
-                Marker(
-                    state = MarkerState(position = pos),
+            if (it.location != null) {
+                LaunchedEffect(it.name) {
+                    if (it.weather == null) {
+                        viewModel.loadWeather(it.name)
+                    }
+                }
+                Marker( state = MarkerState(position = it.location!!),
                     title = it.name,
-                    snippet = "$pos"
-                )
+                    snippet = it.weather?.desc?:"Carregando...")
             }
+
         }
     }
 }

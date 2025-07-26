@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.runtime.*
 import com.example.weatherapp.api.WeatherService
+import com.example.weatherapp.api.toForecast
+import com.example.weatherapp.api.toWeather
 import com.example.weatherapp.db.fb.FBDatabase
 import com.example.weatherapp.db.fb.FBCity
 import com.example.weatherapp.db.fb.FBUser
@@ -16,9 +18,10 @@ import com.google.android.gms.maps.model.LatLng
 class MainViewModel (private val db: FBDatabase,
                      private val service : WeatherService
 ): ViewModel(), FBDatabase.Listener {
-    private val _cities = mutableStateListOf<City>()
-    val cities: List<City>
-        get() = _cities.toList()
+
+    private val _cities = mutableStateMapOf<String, City>()
+    val cities : List<City>
+        get() = _cities.values.toList()
 
     private val _user = mutableStateOf<User?>(null)
     val user: User?
@@ -50,6 +53,21 @@ class MainViewModel (private val db: FBDatabase,
             }
         }
     }
+    fun loadWeather(name: String) {
+        service.getWeather(name) { apiWeather ->
+            val newCity = _cities[name]!!.copy( weather = apiWeather?.toWeather() )
+            _cities.remove(name)
+            _cities[name] = newCity
+        }
+    }
+    fun loadForecast(name: String) {
+        service.getForecast(name) { apiForecast ->
+            val newCity = _cities[name]!!.copy( forecast = apiForecast?.toForecast() )
+            _cities.remove(name)
+            _cities[name] = newCity
+            city = if (city?.name == name) newCity else city
+        }
+    }
 
     override fun onUserLoaded(user: FBUser) {
         _user.value = user.toUser()
@@ -61,17 +79,25 @@ class MainViewModel (private val db: FBDatabase,
     }
 
     override fun onCityAdded(city: FBCity) {
-        _cities.add(city.toCity())
+        _cities[city.name!!] = city.toCity()
     }
+    private var _city = mutableStateOf<City?>(null)
+    var city: City?
+        get() = _city.value
+        set(tmp) { _city.value = tmp?.copy() }
 
     override fun onCityUpdated(city: FBCity) {
-        // Implementar se necessário
+        _cities.remove(city.name)
+        _cities[city.name!!] = city.toCity()
+        if (_city.value?.name == city.name) { _city.value = city.toCity() }
     }
 
     override fun onCityRemoved(city: FBCity) {
-        _cities.remove(city.toCity())
+        _cities.remove(city.name)
+        if (_city.value?.name == city.name) { _city.value = null }
     }
 }
+
 
 class MainViewModelFactory(private val db: FBDatabase,private val service : WeatherService) :
     ViewModelProvider.Factory {

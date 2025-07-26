@@ -22,8 +22,9 @@ import com.example.weatherapp.model.City
 import com.example.weatherapp.viewmodel.MainViewModel
 
 private fun getCities() = List(20) { i ->
-    City(name = "Cidade $i", weather = "Carregando clima...")
+    City(name = "Cidade $i", weather = null)
 }
+
 
 @Composable
 fun CityItem(
@@ -45,8 +46,12 @@ fun CityItem(
         )
         Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = city.name, fontSize = 24.sp)
-            Text(text = city.weather ?: "Carregando clima...", fontSize = 16.sp)
+            Text(modifier = Modifier,
+                text = city.name,
+                fontSize = 24.sp)
+            Text(modifier = Modifier,
+                text = city.weather?.desc?:"carregando...",
+                fontSize = 16.sp)
         }
         IconButton(onClick = onClose) {
             Icon(Icons.Filled.Close, contentDescription = "Close")
@@ -60,7 +65,7 @@ fun ListPage(
     viewModel: MainViewModel
 ) {
     val cityList = viewModel.cities
-    val activity = LocalContext.current as? Activity
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = modifier
@@ -71,12 +76,21 @@ fun ListPage(
             CityItem(
                 city = city,
                 onClick = {
-                    Toast.makeText(activity, "Clicou em ${city.name}", Toast.LENGTH_SHORT).show()
+                    viewModel.city = city
+
+
                 },
                 onClose = {
-                    viewModel.remove(city) // ✅ Passo 4
+                    viewModel.remove(city)
                 }
             )
+
+            // Load clima se necessário
+            LaunchedEffect(city.name) {
+                if (city.weather == null) {
+                    viewModel.loadWeather(city.name)
+                }
+            }
         }
     }
 }

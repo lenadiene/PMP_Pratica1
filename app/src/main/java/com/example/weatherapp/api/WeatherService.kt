@@ -27,7 +27,25 @@ class WeatherService {
     fun getLocation(name: String, onResponse: (lat: Double?, lon: Double?) -> Unit) {
         search(name) { loc -> onResponse(loc?.lat, loc?.lon) }
     }
-
+    private fun <T> enqueue(call : Call<T?>, onResponse : ((T?) -> Unit)? = null){
+        call.enqueue(object : Callback<T?> {
+            override fun onResponse(call: Call<T?>, response: Response<T?>) {
+                val obj: T? = response.body()
+                onResponse?.invoke(obj)
+            }
+            override fun onFailure(call: Call<T?>, t: Throwable) {
+                Log.w("WeatherApp WARNING", "" + t.message)
+            }
+        })
+    }
+    fun getWeather(name: String, onResponse: (APICurrentWeather?) -> Unit){
+        val call: Call<APICurrentWeather?> = weatherAPI.weather(name)
+        enqueue(call) { onResponse.invoke(it) }
+    }
+    fun getForecast(name: String, onResponse: (APIWeatherForecast?) -> Unit) {
+        val call: Call<APIWeatherForecast?> = weatherAPI.forecast(name)
+        enqueue(call) { onResponse.invoke(it) }
+    }
     private fun search(query: String, onResponse: (APILocation?) -> Unit) {
         val call: Call<List<APILocation>?> = weatherAPI.search(query = query)
         call.enqueue(object : Callback<List<APILocation>?> {
