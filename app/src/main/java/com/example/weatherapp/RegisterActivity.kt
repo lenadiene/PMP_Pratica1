@@ -109,7 +109,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
                                 if (task.isSuccessful) {
                                     Toast.makeText(activity, "Registro OK!", Toast.LENGTH_LONG).show()
                                     FBDatabase().register(User(name, email).toFBUser())
-                                    // activity.finish() // ← Remover esta linha. O AuthStateListener do WeatherApp cuidará da navegação
+
                                 } else {
                                     Toast.makeText(activity, "Registro FALHOU!", Toast.LENGTH_LONG).show()
                                 }

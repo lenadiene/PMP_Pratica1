@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
                             actions = {
                                 IconButton(onClick = {
                                     Firebase.auth.signOut()
-                                    // finish() // ← Remover esta linha.  O AuthStateListener do WeatherApp cuidará da navegação
+
                                 }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(viewModel.page) {
                          navController.navigate(viewModel.page.toString()) {
-                            // Volta pilha de navegação até HomePage (startDest).
+                             // Volta pilha de navegação até HomePage (startDest).
                             navController.graph.startDestinationRoute?.let {
                                 popUpTo(it) {
                                     saveState = true

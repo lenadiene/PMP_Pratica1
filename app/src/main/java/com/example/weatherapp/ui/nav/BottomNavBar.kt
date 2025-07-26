@@ -16,13 +16,13 @@ import com.example.weatherapp.viewmodel.MainViewModel
 @Composable
 fun BottomNavBar(
     viewModel: MainViewModel,
-    items: List<BottomNavItem> // Adicionei o parâmetro items
+    items: List<BottomNavItem>
 ) {
     NavigationBar(
         containerColor = Color.White,
         contentColor = Color.Black
     ) {
-        items.forEach { item -> // Agora usei o parâmetro items recebido
+        items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(imageVector = item.icon, contentDescription = item.title) },
                 label = { Text(text = item.title, fontSize = 12.sp) },
