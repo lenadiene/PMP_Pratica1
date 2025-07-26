@@ -11,33 +11,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.weatherapp.viewmodel.MainViewModel
 
 @Composable
 fun BottomNavBar(
-    navController: NavHostController,
-    items: List<BottomNavItem> // Adicionamos o parâmetro items
+    viewModel: MainViewModel,
+    items: List<BottomNavItem> // Adicionei o parâmetro items
 ) {
     NavigationBar(
         containerColor = Color.White,
         contentColor = Color.Black
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-
-        items.forEach { item -> // Agora usamos o parâmetro items recebido
+        items.forEach { item -> // Agora usei o parâmetro items recebido
             NavigationBarItem(
                 icon = { Icon(imageVector = item.icon, contentDescription = item.title) },
                 label = { Text(text = item.title, fontSize = 12.sp) },
                 alwaysShowLabel = true,
-                selected = currentRoute == item.route.toString(),
+                selected = viewModel.page == item.route,
+
                 onClick = {
-                    navController.navigate(item.route.toString()) { // Converta para string
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    viewModel.page = item.route
                 }
             )
         }

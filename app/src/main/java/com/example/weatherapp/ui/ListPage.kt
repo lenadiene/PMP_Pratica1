@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.model.City
+import com.example.weatherapp.ui.nav.Route
 import com.example.weatherapp.viewmodel.MainViewModel
 
 private fun getCities() = List(20) { i ->
@@ -77,7 +78,7 @@ fun ListPage(
                 city = city,
                 onClick = {
                     viewModel.city = city
-
+                    viewModel.page = Route.Home
 
                 },
                 onClose = {
