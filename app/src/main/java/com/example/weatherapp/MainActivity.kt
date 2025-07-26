@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     LaunchedEffect(viewModel.page) {
-                        navController.navigate(viewModel.page.toString()) {
+                         navController.navigate(viewModel.page.toString()) {
                             // Volta pilha de navegação até HomePage (startDest).
                             navController.graph.startDestinationRoute?.let {
                                 popUpTo(it) {
