@@ -44,6 +44,18 @@ class MainViewModel (private val db: FBDatabase,
     fun add(name: String, location: LatLng? = null) {
         db.add(City(name = name, location = location).toFBCity())
     }
+    fun loadBitmap(name: String) {
+        val city = _cities[name]
+        service.getBitmap(city?.weather!!.imgUrl) { bitmap ->
+            val newCity = city.copy(
+                weather = city.weather?.copy(
+                    bitmap = bitmap
+                )
+            )
+            _cities.remove(name)
+            _cities[name] = newCity
+        }
+    }
 
     fun add(name: String) {
         service.getLocation(name) { lat, lng ->
