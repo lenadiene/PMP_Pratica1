@@ -3,6 +3,7 @@ package com.example.weatherapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.runtime.*
+import com.example.monitor.ForecastMonitor
 import com.example.weatherapp.api.WeatherService
 import com.example.weatherapp.api.toForecast
 import com.example.weatherapp.api.toWeather
@@ -18,7 +19,8 @@ import com.example.weatherapp.ui.nav.Route
 
 
 class MainViewModel (private val db: FBDatabase,
-                     private val service : WeatherService
+                     private val service : WeatherService,
+                     private val monitor: ForecastMonitor,
 ): ViewModel(), FBDatabase.Listener {
 
     private val _cities = mutableStateMapOf<String, City>()
@@ -36,7 +38,9 @@ class MainViewModel (private val db: FBDatabase,
     init {
         db.setListener(this)
     }
-
+    fun update(city: City) {
+        db.update(city.toFBCity())
+    }
     fun remove(city: City) {
         db.remove(city.toFBCity())
     }
@@ -56,6 +60,10 @@ class MainViewModel (private val db: FBDatabase,
             _cities[name] = newCity
         }
     }
+    fun loadUser() {
+        db.loadUser()
+    }
+
 
     fun add(name: String) {
         service.getLocation(name) { lat, lng ->
@@ -94,37 +102,56 @@ class MainViewModel (private val db: FBDatabase,
     override fun onUserSignOut() {
         _user.value = null
         _cities.clear()
+        monitor.cancelAll()
     }
 
     override fun onCityAdded(city: FBCity) {
-        _cities[city.name!!] = city.toCity()
+         _cities[city.name!!] = city.toCity()
+        monitor.updateCity(city.toCity())
     }
     private var _city = mutableStateOf<City?>(null)
     var city: City?
         get() = _city.value
         set(tmp) { _city.value = tmp?.copy() }
 
+
     override fun onCityUpdated(city: FBCity) {
-        _cities.remove(city.name)
-        _cities[city.name!!] = city.toCity()
-        if (_city.value?.name == city.name) { _city.value = city.toCity() }
+        val oldCity = _cities[city.name]
+        val newCity = city.toCity().copy(
+            weather = oldCity?.weather,
+            forecast = oldCity?.forecast
+        )
+        _cities[city.name!!] = newCity
+
+        if (_city.value?.name == city.name) {
+            _city.value = newCity
+        }
+
+        monitor.updateCity(newCity) // <-- agenda/cancela worker da cidade
     }
 
     override fun onCityRemoved(city: FBCity) {
         _cities.remove(city.name)
-        if (_city.value?.name == city.name) { _city.value = null }
+        if (_city.value?.name == city.name) {
+            _city.value = null
+        }
+        monitor.cancelCity(city.toCity()) // <-- cancela worker dessa cidade
     }
 }
 
 
-class MainViewModelFactory(private val db: FBDatabase,private val service : WeatherService) :
-    ViewModelProvider.Factory {
+
+class MainViewModelFactory(
+    private val db: FBDatabase,
+    private val service: WeatherService,
+    private val monitor: ForecastMonitor   // <-- novo parâmetro
+) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            return MainViewModel(db, service) as T
-
+            return MainViewModel(db, service, monitor) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+

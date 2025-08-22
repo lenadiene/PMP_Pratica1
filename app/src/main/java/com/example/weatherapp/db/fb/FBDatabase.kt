@@ -20,6 +20,31 @@ class FBDatabase {
     private val db = Firebase.firestore
     private var citiesListReg: ListenerRegistration? = null
     private var listener: Listener? = null
+    fun loadUser() {
+        val uid = Firebase.auth.currentUser?.uid ?: return
+        val refCurrUser = db.collection("users").document(uid)
+
+        refCurrUser.get().addOnSuccessListener {
+            it.toObject(FBUser::class.java)?.let { user ->
+                listener?.onUserLoaded(user)
+            }
+        }
+    }
+    fun update(city: FBCity) {
+        if (auth.currentUser == null) throw RuntimeException("Not logged in!")
+        if (city.name.isNullOrEmpty()) throw RuntimeException("City with null or empty name!")
+
+        val uid = auth.currentUser!!.uid
+        val changes = mapOf(
+            "lat" to city.lat,
+            "lng" to city.lng,
+            "monitored" to city.monitored
+        )
+
+        db.collection("users").document(uid)
+            .collection("cities").document(city.name!!)
+            .update(changes)
+    }
 
     init {
         auth.addAuthStateListener { auth ->

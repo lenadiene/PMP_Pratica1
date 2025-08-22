@@ -1,6 +1,7 @@
 package com.example.weatherapp
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.monitor.ForecastMonitor
 import com.example.weatherapp.api.WeatherService
 import com.example.weatherapp.db.fb.FBDatabase
 import com.example.weatherapp.ui.CityDialog
@@ -34,12 +36,11 @@ import com.example.weatherapp.ui.nav.Route
 import com.example.weatherapp.viewmodel.MainViewModelFactory
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import androidx.core.util.Consumer
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
-
-    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,9 +49,26 @@ class MainActivity : ComponentActivity() {
         setContent {
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService() }
-            val viewModel : MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService)
+            val monitor = remember { ForecastMonitor(this) } // <-- cria ForecastMonitor
+
+            val viewModel: MainViewModel = viewModel(
+                factory = MainViewModelFactory(fbDB, weatherService, monitor) // <-- passa monitor
             )
+
+            LaunchedEffect(Unit) {
+                viewModel.loadUser()
+            }
+            DisposableEffect(Unit) {
+                val listener = Consumer<Intent> { intent ->
+                    val name = intent.getStringExtra("city")
+                    val city = viewModel.cities.find { it.name == name }
+                    viewModel.city = city
+                    viewModel.page = Route.Home
+                }
+                addOnNewIntentListener(listener)
+                onDispose { removeOnNewIntentListener(listener) }
+            }
+
             val navController = rememberNavController()
             var showDialog by remember { mutableStateOf(false) }
 
@@ -79,8 +97,9 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             title = {
-                                val name = viewModel.user?.name?:"[não logado]"
-                                Text("Bem-vindo/a! $name")
+                                val user by remember { derivedStateOf { viewModel.user } }
+                                Text("Bem-vindo/a! ${user?.name ?: "[não logado]"}")
+
                             },
                             actions = {
                                 IconButton(onClick = {
@@ -143,7 +162,8 @@ class MainActivity : ComponentActivity() {
 fun HomePagePreview() {
     val fakeViewModel = remember { MainViewModel(
         db = TODO(),
-        service = TODO()
+        service = TODO(),
+        monitor = TODO()
     ) }
 
     WeatherAppTheme {

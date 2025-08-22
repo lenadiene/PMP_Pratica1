@@ -32,13 +32,19 @@ import com.example.weatherapp.R
 import com.example.weatherapp.model.Forecast
 import com.example.weatherapp.viewmodel.MainViewModel
 import java.text.DecimalFormat
-
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.Icon
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 @Composable
 fun HomePage(viewModel: MainViewModel) {
     Column {
         if (viewModel.city == null) {
-            Column( modifier = Modifier.fillMaxSize()
-                .background(Color.Blue).wrapContentSize(Alignment.Center)
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(Color.Blue)
+                    .wrapContentSize(Alignment.Center)
             ) {
                 Text(
                     text = "Selecione uma cidade!",
@@ -48,7 +54,7 @@ fun HomePage(viewModel: MainViewModel) {
                 )
             }
         } else {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 AsyncImage(
                     model = viewModel.city?.weather?.imgUrl,
                     modifier = Modifier.size(100.dp),
@@ -57,20 +63,49 @@ fun HomePage(viewModel: MainViewModel) {
                 )
                 Column {
                     Spacer(modifier = Modifier.size(12.dp))
-                    Text( text = viewModel.city?.name ?: "Selecione uma cidade...",
-                        fontSize = 28.sp )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = viewModel.city?.name ?: "Selecione uma cidade...",
+                            fontSize = 28.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        // ✅ Ícone Monitoramento (clicável na HomePage)
+                        val icon =
+                            if (viewModel.city!!.isMonitored) Icons.Filled.Notifications
+                            else Icons.Outlined.Notifications
+
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = "Monitorada?",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable(enabled = viewModel.city != null) {
+                                    viewModel.update(
+                                        viewModel.city!!.copy(
+                                            isMonitored = !viewModel.city!!.isMonitored
+                                        )
+                                    )
+                                }
+                        )
+                    }
                     Spacer(modifier = Modifier.size(12.dp))
-                    Text( text = viewModel.city?.weather?.desc ?: "...",
-                        fontSize = 22.sp )
+                    Text(
+                        text = viewModel.city?.weather?.desc ?: "...",
+                        fontSize = 22.sp
+                    )
                     Spacer(modifier = Modifier.size(12.dp))
-                    Text( text = "Temp: " + viewModel.city?.weather?.temp + "℃",
-                        fontSize = 22.sp )
+                    Text(
+                        text = "Temp: " + viewModel.city?.weather?.temp + "℃",
+                        fontSize = 22.sp
+                    )
                 }
             }
             LaunchedEffect(viewModel.city!!.name) {
-                if (viewModel.city!!.forecast == null ||
-                    viewModel.city!!.forecast!!.isEmpty()
-                ) {
+                if (viewModel.city!!.forecast == null || viewModel.city!!.forecast!!.isEmpty()) {
                     viewModel.loadForecast(viewModel.city!!.name)
                 }
             }

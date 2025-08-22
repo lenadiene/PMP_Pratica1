@@ -1,5 +1,7 @@
 package com.example.weatherapp.ui
 
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -53,12 +55,27 @@ fun CityItem(
 
         Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(modifier = Modifier,
-                text = city.name,
-                fontSize = 24.sp)
-            Text(modifier = Modifier,
-                text = city.weather?.desc?:"carregando...",
-                fontSize = 16.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = city.name,
+                    fontSize = 24.sp,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // ✅ Ícone Monitoramento (apenas exibição na ListPage)
+                val icon =
+                    if (city.isMonitored) Icons.Filled.Notifications
+                    else Icons.Outlined.Notifications
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "Monitorada?",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Text(
+                text = city.weather?.desc ?: "carregando...",
+                fontSize = 16.sp
+            )
         }
         IconButton(onClick = onClose) {
             Icon(Icons.Filled.Close, contentDescription = "Close")
