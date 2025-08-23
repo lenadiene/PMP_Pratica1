@@ -4,18 +4,20 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
-    id ("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     alias(libs.plugins.google.gms.google.services)
 }
 
+
 android {
     namespace = "com.example.weatherapp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.weatherapp"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -26,7 +28,9 @@ android {
         buildConfigField ("String", "WEATHER_API_KEY",
             props.getProperty("WEATHER_API_KEY"))
     }
-
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.3"
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -50,6 +54,10 @@ android {
 }
 
 dependencies {
+    val room_version = "2.7.2"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

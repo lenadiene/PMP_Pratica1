@@ -35,8 +35,10 @@ import com.example.weatherapp.viewmodel.MainViewModel
 import com.example.weatherapp.ui.nav.Route
 import com.example.weatherapp.viewmodel.MainViewModelFactory
 import com.google.firebase.auth.ktx.auth
+import com.example.weatherapp.repo.Repository
 import com.google.firebase.ktx.Firebase
 import androidx.core.util.Consumer
+import com.example.weatherapp.db.local.LocalDatabase
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,16 +49,32 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            // Instância do Firebase DB
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService() }
-            val monitor = remember { ForecastMonitor(this) } // <-- cria ForecastMonitor
+            val monitor = remember { ForecastMonitor(this) }
 
+            // Estado para usuário logado
+            var currentUser by remember { mutableStateOf(Firebase.auth.currentUser) }
+
+            // Inicializa LocalDatabase usando UID do usuário logado
+            val localDB = remember(currentUser?.uid) {
+                LocalDatabase(context = this, databaseName = "local_${currentUser?.uid}.db")
+            }
+
+            // Cria Repository usando FBDatabase e LocalDatabase
+            val repository = remember(fbDB, localDB) {
+                Repository(fbDB, localDB)
+            }
+
+            // Instancia ViewModel usando Repository
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService, monitor) // <-- passa monitor
+                factory = MainViewModelFactory(repository, weatherService, monitor)
             )
 
             LaunchedEffect(Unit) {
-                viewModel.loadUser()
+                // Atualiza currentUser quando carregar usuário
+                currentUser = Firebase.auth.currentUser
             }
             DisposableEffect(Unit) {
                 val listener = Consumer<Intent> { intent ->
@@ -161,7 +179,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomePagePreview() {
     val fakeViewModel = remember { MainViewModel(
-        db = TODO(),
+        repository = TODO(),
         service = TODO(),
         monitor = TODO()
     ) }
