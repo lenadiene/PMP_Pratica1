@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,9 +32,7 @@ import com.example.weatherapp.viewmodel.MainViewModel
 import java.text.DecimalFormat
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.Icon
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
+
 @Composable
 fun HomePage(viewModel: MainViewModel) {
     Column {
@@ -79,18 +75,14 @@ fun HomePage(viewModel: MainViewModel) {
                             else Icons.Outlined.Notifications
 
                         Icon(
-                            imageVector = icon,
-                            contentDescription = "Monitorada?",
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clickable(enabled = viewModel.city != null) {
-                                    viewModel.update(
-                                        viewModel.city!!.copy(
-                                            isMonitored = !viewModel.city!!.isMonitored
-                                        )
-                                    )
-                                }
+                            imageVector = icon, contentDescription = "Monitorada?",
+                            modifier = Modifier.size(32.dp).clickable(enabled=viewModel.city != null){
+                                viewModel.update(
+                                    viewModel.city!!.copy(
+                                        isMonitored = !viewModel.city!!.isMonitored))
+                            }
                         )
+
                     }
                     Spacer(modifier = Modifier.size(12.dp))
                     Text(
@@ -106,9 +98,10 @@ fun HomePage(viewModel: MainViewModel) {
             }
             LaunchedEffect(viewModel.city!!.name) {
                 if (viewModel.city!!.forecast == null || viewModel.city!!.forecast!!.isEmpty()) {
-                    viewModel.loadForecast(viewModel.city!!.name)
+                    viewModel.loadForecast(viewModel.city!!) // ✅ agora passa City
                 }
             }
+
             if (viewModel.city?.forecast != null) {
                 LazyColumn {
                     items(viewModel.city!!.forecast!!) { forecast ->

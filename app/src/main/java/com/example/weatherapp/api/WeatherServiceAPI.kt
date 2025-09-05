@@ -17,8 +17,8 @@ interface WeatherServiceAPI {
 
     @GET("search.json?lang=pt_br")
     fun search(
-        @Query("key") apiKey: String = API_KEY,
-        @Query("q") query: String
+        @Query("q") query: String,
+        @Query("key") key: String = BuildConfig.WEATHER_API_KEY
     ): Call<List<APILocation>?>
 
     @GET("forecast.json?key=$API_KEY&days=10&lang=pt")
